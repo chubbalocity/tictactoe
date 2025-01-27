@@ -1,0 +1,51 @@
+### Team Sea ###
+#     (..)     #
+#   (((())))   #
+################
+# Celia Chesebro 
+# Ian Hutcheson
+# Nathaniel Mcrae
+
+
+#bruteforce print opening credits centered.
+Centerwidth = 60 
+OpCreditText1= "### TEAM SEA ###"
+OpCreditText2= "#     (..)     #"
+OpCreditText3= "#   (((())))   #"
+OpCreditText4= "####PRESENTS####"
+OpCreditText5= "##TIC#TAC#TOE###"
+
+
+print(OpCreditText1.center(Centerwidth))
+print(OpCreditText2.center(Centerwidth))
+print(OpCreditText3.center(Centerwidth))
+print(OpCreditText4.center(Centerwidth))
+print(OpCreditText5.center(Centerwidth))
+
+
+
+# salutation
+import random
+Greeting = ["Hey", "Hi", "Hello"]
+Salutation = Greeting[random.randint(0, len(Greeting) - 1)]
+print(Salutation, "there! Let's play Tic-Tac-Toe!")
+print("What is your name?")
+
+# ask the user their name
+Player1Name = input("Enter your name:")
+#input returns a string, use int(input ()) to return integer
+
+#since we asked for a name, check for a string
+if Player1Name.isalpha():
+   # if quit is entered, exit
+   #if Player1Name = "quit"
+   # else  
+   #elif <condition>:
+   #    print("message")
+   #else:
+   #    print("message")
+   #Goodbye
+   print(f"Hello {Player1Name}")
+# if the input value is not a number - NumericTest is False, ask for a number and exit.
+else:
+   print("Please enter a name, or type 'quit' to exit.")
