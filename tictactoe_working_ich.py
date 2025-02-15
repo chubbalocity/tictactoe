@@ -154,7 +154,7 @@ def human_play(n): #define function for human turn (used in both 1p and 2p modes
     try: #exception handling for non-integer input
         num = int(num) #validate entry is number
     except ValueError: #handle ValueError gracefully
-        print("Invalid input- please enter an available number between 1 and 9.")#adv of error
+        print(f"Invalid input- please enter an available number between 1 and 9 or {qt}.")#adv of error
         human_play(n)#call function again
         return
     else: #if no ValueError:
