@@ -8,10 +8,10 @@
 # Nathaniel Mcrae
 
 ### TO DO
-# def name style consistent
+# def name style consistent - all camel or lower
 # minimax algo
 # fix centering?
-# freview logging to tictactoe.txt
+# no recursive loops - turn into while
 
 ### COMPLETED REQUIREMENTS
 # ask user for name
@@ -34,29 +34,23 @@ import sys # used to exit when quit is given as input
 
 #### Board Dictionary
 TTTBoard = {"A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "F": "F", "G": "G", "H": "H", "I": "I"}
-##separate tuple of places for use in other logic
+##separate tuple of places for use in other logic 
+# (dictionary can't be called positionally for random, compare list for stalemate logic)
 PlaceList = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
 
 # save file
 savefile = 'tictactoe.txt'
-#### OPTIONAL LOGGING
- #log file
-logfile = 'tttlog.txt'   
-# logging # optional
-#with open(logfile, 'a') as logging_opt: # a = append ##next line = pretty as new line in file
-#     logging_opt.write(f'{Takeinput}\n') # Quotes don't work, must be ' #\n for new line
-#     logging_opt.write(f'Dummy test log line. \n') # test logging 1
-#     logging_opt.write(f'fake programattic thing that happens because of "{Takeinput}". \n') # test logging 2
 
 
-
-###### WORKING LINE
+###### Functions
 # salutation
 #needs import random - small test of rand concept.
-def salutation():
+def Salutation():
+   print(OpCreditText.center(Centerwidth))
+   print("")
    Greeting = ["Hey", "Hi", "Hello"]
    Salutation = Greeting[random.randint(0, len(Greeting) - 1)]
-   print(Salutation, "there! Let's play Tic-Tac-Toe!")
+   print(f"{Salutation} there! Let's play Tic-Tac-Toe!")
 
 #Utility function
 # exits if 'quit' is entered
@@ -110,7 +104,11 @@ def select_Player1Marker(Player):
 
 #versus function, Designates marker of opponent based on
 # player 1s input. (assignes O if player chooses X and vice versa)
-def assign_VersusMarker(Player, PlayerMarker):
+# returns Player2Marker
+#args, Player, PlayerMarker
+# these are called Player 1s name and marker, 
+# but not naming the same to keep variables separate
+def assign_VersusMarker(Player,PlayerMarker):
       if PlayerMarker == "X":
          Player2Marker = "O"
       else:
@@ -128,7 +126,7 @@ def get_PlayerTwo():
     exit_utility(PlayerTwoSelect) # pass input through utility function if user wants to quit
     # OctoBot is the static method for the game to know if the computer is playing.
     if PlayerTwoSelect == 'A':
-         print("selected: computer")
+         print("Selected: Computer")
          Player2 = "OctoBot"
          #write selection to save file
          with open(savefile, 'a') as save_input: # a = append 
@@ -136,7 +134,7 @@ def get_PlayerTwo():
          return Player2
     # if another player is selected, call the get_PlayerName() function, with different text prompt
     elif PlayerTwoSelect == 'B':
-         print("selected: player")
+         print("Selected: Player")
          Player2 = get_PlayerName("Enter your name, Player Two:")
          #write selection to save file
          with open(savefile, 'a') as save_input: # a = append 
@@ -149,26 +147,40 @@ def get_PlayerTwo():
 
 ###BOARD FUNCTIONS
 
-## function to display board ###
-def TTTBoard_Display():
-    print("TicTacToe Board")
-    print("+-----------+")
-    print(f"| {TTTBoard['A']} | {TTTBoard['B']} | {TTTBoard['C']} |")
-    print("-------------")    
-    print(f"| {TTTBoard['D']} | {TTTBoard['E']} | {TTTBoard['F']} |") 
-    print("-------------")
-    print(f"| {TTTBoard['G']} | {TTTBoard['H']} | {TTTBoard['I']} |") 
-    print("+-----------+")
+## function to display TicTacToe board ###
+def display_TTTBoard():
+    #board config
+    TTTBoardVar=f"""
+    +-----------+
+    | {TTTBoard['A']} | {TTTBoard['B']} | {TTTBoard['C']} |
+    -------------   
+    | {TTTBoard['D']} | {TTTBoard['E']} | {TTTBoard['F']} |
+    -------------
+    | {TTTBoard['G']} | {TTTBoard['H']} | {TTTBoard['I']} |
+    +-----------+"""
+    # print board
+    print(TTTBoardVar) #.center(Centerwidth)) 
 
 ## win conditions function ###
 # returns false until a given marker is present in all three slots of one of the conditions
 def CheckForWin(PlayerMarker):
+    #list of lists of possible win conditions
     WinConditions = [
-        ["A","B","C"],["D","E","F"],["G","H","I"],# Horizontal
-        ["A","D","G"],["B","E","H"],["C","F","I"],# Vertical
-        ["A","E","I"],["G","E","C"] # Diagonal
-    ]
+        # Horizontal
+        ["A","B","C"],
+        ["D","E","F"],
+        ["G","H","I"],
+        # Vertical
+        ["A","D","G"],
+        ["B","E","H"],
+        ["C","F","I"],
+        # Diagonal
+        ["A","E","I"],
+        ["G","E","C"] 
+                     ]
+    # for each list in the list of win conditions
     for Conditions in WinConditions:
+        # if all 3 values in any list match a player marker, then it is 3 in a row , return true
         if TTTBoard[Conditions[0]] == TTTBoard[Conditions[1]] == TTTBoard[Conditions[2]] == PlayerMarker:
             return True
     return False
@@ -179,8 +191,13 @@ def CheckForWin(PlayerMarker):
 # displays message, exits if there are none
 def CheckForStalemate():
    TTTValues = list(TTTBoard.values())
+   # isdisjoint() checks if the list of values currently in the Tic Tac Toe Board
+   # have any elements in common with the tuple of available places
+   # if there are none, there are no moves left, and it is a stalemate
    if set(PlaceList).isdisjoint(TTTValues):
-      print(StalemateOctopus)
+      # tell the player there are no more moves
+      print(StalemateOctopus.center(Centerwidth))
+      # update the save file with exit reason
       with open(savefile, 'a') as save_input: # a = append 
          save_input.write(f'Stalemate: No moves left, exiting. \n') #\n for new line
       sys.exit()
@@ -191,9 +208,9 @@ def CheckForStalemate():
 
 
 ### TEXT ### ###TEXT #### 
-Centerwidth = 60 
+Centerwidth = 80 
 #opening credits
-OpCreditText= """
+OpCreditText= f"""
 ### TEAM SEA ###
 #     (..)     #
 #   (((())))   #
@@ -201,15 +218,19 @@ OpCreditText= """
 ##TIC#TAC#TOE###
 """
 #victory 
-VictoryOctopus='''
+VictoryOctopus=f'''
+#Congratulations!#
 #    ( (..) )    #
-#     ((()))     #'''
+#     ((()))     #
+##################
+'''
 
 #stalemate
-StalemateOctopus='''
+StalemateOctopus=f'''
 # No More Moves! #
 #    (((())))    #
 #      (xx)      #
+##################
 '''
 
 ### Move Logic
@@ -217,19 +238,23 @@ StalemateOctopus='''
 def TTT_Move(CurrentPlayer,PlayerMarker):
     while True:
         PlaceMark = input(f"Player {CurrentPlayer}, enter A-I to place your {PlayerMarker} ").upper()
-        exit_utility(PlaceMark) # pass input through the utility function that logs the input and checks for 'quit' 
+        exit_utility(PlaceMark) # pass input through the utility function that checks for 'quit' 
         # if input is in the list of moves
         if PlaceMark in TTTBoard:
             print(TTTBoard[PlaceMark])
             # check if the location is already taken.
             if TTTBoard[PlaceMark] not in ["X","O"]:
                TTTBoard[PlaceMark] = PlayerMarker
+               # update save file with this info
                with open(savefile, 'a') as save_input: # a = append 
                   save_input.write(f'Player {CurrentPlayer} put their {PlayerMarker} on {PlaceMark} successfully. \n') #\n for new line
-               TTTBoard_Display()
+               #display the board
+               display_TTTBoard()
                break
             else:
+               # if place is taken, display message and ask player to try again.
                print(f"Oops! {PlaceMark} is taken by an {TTTBoard[PlaceMark]}. try again!")
+               # update save file with this info
                with open(savefile, 'a') as save_input: # a = append 
                   save_input.write(f'Player {CurrentPlayer} tried to put their {PlayerMarker} on {PlaceMark}, but it was taken by an {TTTBoard[PlaceMark]}. \n') #\n for new line
         else:
@@ -237,19 +262,25 @@ def TTT_Move(CurrentPlayer,PlayerMarker):
 
 #function to have computer randomly select move ###
 def Octo_Move(CurrentPlayer,PlayerMarker):
+        # randomly choose a place from list of places
         PlacePick = random.randint(0, len(TTTBoard) - 1)
         # using list of places as dictionary used for the board is not positional.
         print(f"{CurrentPlayer} is playing {PlaceList[PlacePick]}")
-        #check if location is taken
+        #check if location is taken, if not place Octo Marker
         if TTTBoard[PlaceList[PlacePick]] not in ["X","O"]:
             TTTBoard[PlaceList[PlacePick]] = PlayerMarker
+            # update save file with this info
             with open(savefile, 'a') as save_input: # a = append 
                save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} successfully. \n') #\n for new line
-            TTTBoard_Display()
+            #display the board
+            display_TTTBoard()
         else:
-            print(f"{PlaceList[PlacePick]} is taken, trying again.")
+            # if move was taken, put in the save file (keeping print but commenting it out to reduce noise)
+            # print(f"{PlaceList[PlacePick]} is taken, trying again.")
+            # update save file with this info
             with open(savefile, 'a') as save_input: # a = append 
                save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} but it was taken. \n') #\n for new line
+            #call move function to try again   
             Octo_Move(CurrentPlayer,PlayerMarker)
 
 
@@ -274,6 +305,9 @@ def TurnLogic(CurrentPlayer, Players):
 # returns next CurrentPlayer 
 def first_TTT_Play():
     global Player1Marker
+    # initialize variable or quitting leads to "not defined" errors
+    # in next play
+    CurrentPlayer = ["PlayerPlaceholder","MarkerPlaceholder"]
     if Player1Marker == "X":
         TTT_Move(Player1,Player1Marker)
         CurrentPlayer = [Player1,Player1Marker]
@@ -299,19 +333,27 @@ def first_TTT_Play():
 
 ### MAIN LOGIC ## 
 # Main TicTacToe Loop
-# 
 def TTT_Main():
+   #pass currentplayer into function
+   #arguments called positionally here - name[0],marker[1]
    global CurrentPlayer
+   # while no player markers meet the win condition
+   # Check for win is called twice - once here to enable a while loop, 
+   # and again inline to actually check for win at the right time and return victory message
    while CheckForWin(CurrentPlayer[1]) is False:
+      # if current player is the computer, call Octo_Move
       if CurrentPlayer[0] == "OctoBot":
             Octo_Move(CurrentPlayer[0],CurrentPlayer[1])
+      #otherwise, ask CurrentPlayer for their choice
       else:
             TTT_Move(CurrentPlayer[0],CurrentPlayer[1])
+      # Check for win, display message if true and exit
       if CheckForWin(CurrentPlayer[1]) is True:
          print(f"Player {CurrentPlayer[0]} won!")
-         print(VictoryOctopus)
+         print(VictoryOctopus.center(Centerwidth))
+         # update the save file with this info
          with open(savefile, 'a') as save_input: # a = append 
-            save_input.write(f'f"Player {CurrentPlayer[0]} won. Exiting.") \n') #\n for new line
+            save_input.write(f'"Player {CurrentPlayer[0]} won. Exiting.") \n') #\n for new line
          sys.exit()
       else:
          pass
@@ -321,14 +363,11 @@ def TTT_Main():
       CurrentPlayer = TurnLogic(CurrentPlayer,PlayerList)
 
       #then repeate loop
-      TTT_Main()
-   # else:
-   #    print(f"Why is this triggering?")
-   #    sys.exit()
-
+      #TTT_Main() # naughty, using CheckForWin at top of while loop avoids this.
+  
 ### CALLS BEGIN ###
 #call salutation
-salutation()
+Salutation()
 #get player 1 name & greet player by name
 Player1 = get_PlayerName()
 print(f"Hello {Player1}")
@@ -349,10 +388,11 @@ print(f"{Player2} is playing {Player2Marker}")
 PlayerList = [[Player1, Player1Marker], [Player2 , Player2Marker]]
 
 # display the board
-TTTBoard_Display()
+display_TTTBoard()
 
-#status print - may be decommented to observe logic progress
-print(f"Players gathered, starting first move")
+#status print
+print(f"{Player1} vs {Player2}")#.center(Centerwidth))
+print(f"Players gathered, lets play!")
 
 # first move based on who is playing x also returns current player
 CurrentPlayer= first_TTT_Play()
