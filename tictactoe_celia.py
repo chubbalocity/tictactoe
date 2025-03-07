@@ -11,7 +11,7 @@
 # def name style consistent - all camel or lower
 # minimax algo
 # fix centering?
-# no recursive loops - turn into while
+# add explanation for quit
 
 ### COMPLETED REQUIREMENTS
 # ask user for name
@@ -24,9 +24,9 @@
 # add move logging to tictactoe.txt
 # prints message for winner and exits
 
-### COMPLETED EXTRAS ###
+### COMPLETED Other ###
 # stalemate logic
-
+# no recursive loops - turn into while
 
 ### IMPORTS
 import random # used in greeting, first move if computer
@@ -51,6 +51,7 @@ def Salutation():
    Greeting = ["Hey", "Hi", "Hello"]
    Salutation = Greeting[random.randint(0, len(Greeting) - 1)]
    print(f"{Salutation} there! Let's play Tic-Tac-Toe!")
+   print("You can enter 'quit' at any point to exit the program.")
 
 #Utility function
 # exits if 'quit' is entered
@@ -88,7 +89,7 @@ def select_Player1Marker(Player):
    while True:
       try:
          # ask player for x or o, tell them x goes first.
-         print(f"{Player}, would you like to play as X or O (X goes first)")
+         print(f"{Player}, would you like to play as X or O? (X goes first)")
          Marker = input("X or O?").upper() #change to uppercase
          exit_utility(Marker) # pass input through utility function if user wants to quit
          if(Marker == 'X' or Marker == 'O'):
@@ -106,7 +107,7 @@ def select_Player1Marker(Player):
 # player 1s input. (assignes O if player chooses X and vice versa)
 # returns Player2Marker
 #args, Player, PlayerMarker
-# these are called Player 1s name and marker, 
+# these are called by Player 1s name and marker, 
 # but not naming the same to keep variables separate
 def assign_VersusMarker(Player,PlayerMarker):
       if PlayerMarker == "X":
@@ -218,20 +219,20 @@ OpCreditText= f"""
 ##TIC#TAC#TOE###
 """
 #victory 
-VictoryOctopus=f'''
+VictoryOctopus=f"""
 #Congratulations!#
 #    ( (..) )    #
 #     ((()))     #
 ##################
-'''
+"""
 
 #stalemate
-StalemateOctopus=f'''
+StalemateOctopus=f"""
 # No More Moves! #
 #    (((())))    #
 #      (xx)      #
 ##################
-'''
+"""
 
 ### Move Logic
 # player move function
@@ -275,8 +276,8 @@ def Octo_Move(CurrentPlayer,PlayerMarker):
             #display the board
             display_TTTBoard()
         else:
-            # if move was taken, put in the save file (keeping print but commenting it out to reduce noise)
-            # print(f"{PlaceList[PlacePick]} is taken, trying again.")
+            # if move was taken, put in the save file, try again
+            print(f"{PlaceList[PlacePick]} taken...")
             # update save file with this info
             with open(savefile, 'a') as save_input: # a = append 
                save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} but it was taken. \n') #\n for new line
@@ -290,43 +291,45 @@ def Octo_Move(CurrentPlayer,PlayerMarker):
 #using index properties of lists
 #args: Current player, list of players
 def TurnLogic(CurrentPlayer, Players):
-    #print("switching...", CurrentPlayer)
+    #current player index from list of players
    current_player_index = Players.index(CurrentPlayer)
-    #print("current_index.", current_index)
+    #next player is current player index + 1 mod length of list 
+    # (with two players this just switches between the two) 
    next_player_index = (current_player_index + 1) % len(Players)
-   #print("next_index.", next_index)
-   #print("switching to:", Players[next_index])
+   #update save file with switch
    with open(savefile, 'a') as save_input: # a = append 
       save_input.write(f'TurnLogic: Switching from player {Players[current_player_index]} to player {Players[next_player_index]}. \n') #\n for new line
+   # return the next player in the list as the current player
    return Players[next_player_index]
 
 
 # logic for first move, so that x always goes first
 # returns next CurrentPlayer 
 def first_TTT_Play():
-    global Player1Marker
-    # initialize variable or quitting leads to "not defined" errors
+    # initialize CurrentPlayer variable here or quitting leads to "not defined" errors
     # in next play
     CurrentPlayer = ["PlayerPlaceholder","MarkerPlaceholder"]
+    # if player 1 is x, they go first
     if Player1Marker == "X":
         TTT_Move(Player1,Player1Marker)
         CurrentPlayer = [Player1,Player1Marker]
-        #print("first move completed, current player:", CurrentPlayer)
+        #pass player 1 to the turn logic to return the next player
         CurrentPlayer = TurnLogic(CurrentPlayer,PlayerList)
         return CurrentPlayer
+    # if player 1 is not x, player 2 goes first
     else:
         # if current player is the computer, call the Octo_Move() function
-        if CurrentPlayer[0] == "OctoBot":
+        if Player2 == "OctoBot":
             Octo_Move(Player2,Player2Marker)
             CurrentPlayer = [Player2,Player2Marker]
-            #print("first move completed, current player:", CurrentPlayer)
+            #pass player thru the turn logic to return the next player
             CurrentPlayer = TurnLogic(CurrentPlayer,PlayerList)
             return CurrentPlayer
         # if current player is a human, let them choos their move.
         else:
             TTT_Move(Player2,Player2Marker)
             CurrentPlayer = [Player2,Player2Marker]
-            #print("first move completed, current player:", CurrentPlayer)
+            #pass player thru the turn logic to return the next player
             CurrentPlayer = TurnLogic(CurrentPlayer,PlayerList)
             return CurrentPlayer
       
