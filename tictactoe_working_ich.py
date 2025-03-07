@@ -1,3 +1,18 @@
+#IS201 TicTacToe Group Project Assignment - Team C ("Team Sea")
+#Ian, Celia, and Nathaniel
+
+#
+# FYI: The code below is Ian Hutcheson's initial solo attempt at a working game. 
+# The team will be meeting in subsequent weeks to combine elements of each member's contributions.
+# 
+# 
+#
+# Worklist:
+# - replace recursive loops (references to function from within that function) with logical loop iterations 
+# - revise naming conventions to be universally understandable/descriptive
+# - simplify dialog printed for user
+#____________________________________
+
 import random, time #import random and time functions
 
 filename = 'tttlog.txt' #set filename for logging
