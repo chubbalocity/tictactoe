@@ -8,10 +8,8 @@
 # Nathaniel Mcrae
 
 ### TO DO
-# def name style consistent - all camel or lower
 # minimax algo
-# fix centering?
-# add explanation for quit
+# try to break things to catch edge cases
 
 ### COMPLETED REQUIREMENTS
 # ask user for name
@@ -27,32 +25,59 @@
 ### COMPLETED Other ###
 # stalemate logic
 # no recursive loops - turn into while
+# naming convention - at least it's fairly consistent? ¯\_(ツ)_/¯
+## Two programs combined - moved much of Ian's logic onto Celias Framework, switched to #s instead of letters
+#>convert to #'s and make other functions play nicely
+#>tuple to list, remove played moves from list
+#> no wait time, some time announcements instead
+#>move some noisy logic to logfile (logging)
 
 ### IMPORTS
 import random # used in greeting, first move if computer
 import sys # used to exit when quit is given as input
-import time #import time
+import datetime #import datetime
 
-#### Board Dictionary
+#### Starting Dictionary, list, and variables
+# Board Dictionary
 TTTBoard = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}  
 ##separate list of places for use in other logic 
 # (dictionary can't be called positionally for random, compare list for stalemate logic)
 PlaceList = [1, 2, 3, 4, 5, 6, 7, 8, 9] #define list of available moves
+# Set Time variables
+Now = datetime.datetime.now() # current date & time
+NowTime= Now.time() # just the time
 
+### FILES
 # save file
-savefile = 'tictactoe.txt'
-filename = 'tttlog.txt' #set filename for logging
+savefile = 'tictactoe.txt' # save file
+#log file for logging noisier stuff
+logfile = 'tttlog.txt' #set filename for logging
+
 
 ###### Functions
 # salutation
 #needs import random - small test of rand concept.
 def Salutation():
-   print(OpCreditText.center(Centerwidth))
-   print("")
-   Greeting = ["Hey", "Hi", "Hello"]
-   Salutation = Greeting[random.randint(0, len(Greeting) - 1)]
-   print(f"{Salutation} there! Let's play Tic-Tac-Toe!")
-   print("You can enter 'quit' at any point to exit the program.")
+    print(OpCreditText.center(Centerwidth))
+    print("")
+    Greeting = ["Hey", "Hi", "Hello"]
+    Salutation = Greeting[random.randint(0, len(Greeting) - 1)]
+    print(f"{Salutation} there! Let's play Tic-Tac-Toe!")
+    # show current time (from user system)
+    # user friendly time format .strftime()
+    FriendlyTime = Now.strftime("%H:%M")
+    print(f"The time is now: {FriendlyTime}")
+    # note session in save & Log Files
+    SaveAndLog(f'Team Sea Tic-Tac-Toe Session begun @ {Now}\n')
+    print("You can enter 'quit' at any point to exit the program.")
+
+#Utility function
+# function to write some basic logic to both files
+def SaveAndLog(Message):
+    with open(savefile, 'a') as save_input: 
+        save_input.write(Message)
+    with open(logfile, 'a') as save_input: 
+        save_input.write(Message)
 
 #Utility function
 # exits if 'quit' is entered
@@ -61,8 +86,8 @@ def exit_utility(Input):
         if isinstance(Input, str):
             if InputString.upper() == 'QUIT': # quit if quit is entered
                 print("Goodbye")
-                with open(savefile, 'a') as save_input: # a = append ##next line = pretty as new line in file
-                    save_input.write(f'User input quit request: {Input}\n')  #\n for new line
+                # Update Save & Log Files with input
+                SaveAndLog(f'User input quit request: {Input} @ {Now}\n') 
                 sys.exit()
         else:
             pass
@@ -71,21 +96,19 @@ def exit_utility(Input):
 # function to get a players name
 def get_PlayerName(NameAsk="Enter your name:"):
    while True:
-      try:
-      # request player name
-         PlayerName = input(NameAsk)
-         exit_utility(PlayerName) # pass input through utility function if user wants to quit
-         if not PlayerName.isalpha():
-            raise ValueError
-         #write selection to save file
-         with open(savefile, 'a') as save_input: # a = append ##next line = pretty as new line in file
-            save_input.write(f'User input {PlayerName} for PlayerName.\n')  #\n for new line
-         return PlayerName
-      except ValueError:
+        try:
+        # request player name
+            PlayerName = input(NameAsk)
+            exit_utility(PlayerName) # pass input through utility function if user wants to quit
+            if not PlayerName.isalpha():
+                raise ValueError
+            # Update Save & Log Files with input
+            SaveAndLog(f'User input {PlayerName} for PlayerName.\n')  #\n for new line
+            return PlayerName
+        except ValueError:
             print(f"Please try again-{PlayerName} is not valid. Provide a name, or 'quit' to exit")
-            #write rejected input to save file
-            with open(savefile, 'a') as save_input: # a = append ##next line = pretty as new line in file
-                save_input.write(f'User input {PlayerName} was not valid, retrying.\n')  #\n for new line
+            #write rejected input to save & log file
+            SaveAndLog(f'User input {PlayerName} was not valid, retrying.\n')
 
 
 # function for player one to select their marker
@@ -98,9 +121,8 @@ def select_Player1Marker(Player):
          exit_utility(Marker) # pass input through utility function if user wants to quit
          if(Marker == 'X' or Marker == 'O'):
             print(f"{Player} selected: {Marker}")
-            #write selection to save file
-            with open(savefile, 'a') as save_input: # a = append 
-               save_input.write(f'{Player} chose the Marker {Marker} \n') #\n for new line
+            #write selection to save & log file
+            SaveAndLog(f'{Player} chose the Marker {Marker} \n')
             return Marker
          else:
             assert(False) # force assertion so further errors can be managed
@@ -114,14 +136,14 @@ def select_Player1Marker(Player):
 # these are called by Player 1s name and marker, 
 # but not naming the same to keep variables separate
 def assign_VersusMarker(Player,PlayerMarker):
-      if PlayerMarker == "X":
-         Player2Marker = "O"
-      else:
-         Player2Marker = "X"
-      # update file with status
-      with open(savefile, 'a') as save_input: # a = append 
-         save_input.write(f'Player Two is assigned the Marker {Player2Marker} \n') #\n for new line
-      return Player2Marker
+    if PlayerMarker == "X":
+        Player2Marker = "O"
+    else:
+        Player2Marker = "X"
+    # update log file with status
+    with open(logfile, 'a') as save_input: # a = append
+        save_input.write(f'Player Two is assigned the Marker {Player2Marker}, since {Player} chose {PlayerMarker} \n') #\n for new line
+    return Player2Marker
 
 #function to ask if player two is pc or person
 # give option of a computer or b person
@@ -133,17 +155,19 @@ def get_PlayerTwo():
     if PlayerTwoSelect == 'A':
          print("Selected: Computer")
          Player2 = "OctoBot"
-         #write selection to save file
-         with open(savefile, 'a') as save_input: # a = append 
-            save_input.write(f'Player Two will be played by the OctoBot\n') #\n for new line
+         #write selection to save & log files
+         SaveAndLog(f'Player Two will be played by the OctoBot\n') #\n for new line
          return Player2
     # if another player is selected, call the get_PlayerName() function, with different text prompt
     elif PlayerTwoSelect == 'B':
          print("Selected: Player")
+         # write selection only to log file before calling the appropriate function
+         with open(logfile, 'a') as save_input: # a = append
+            save_input.write(f'get_PlayerTwo logic: PlayerTwoSelect is another player, calling get_PlayerName\n')
+         # call player name logic again for player two
          Player2 = get_PlayerName("Enter your name, Player Two:")
-         #write selection to save file
-         with open(savefile, 'a') as save_input: # a = append 
-            save_input.write(f'Player Two will be played by {Player2}\n') #\n for new line
+         #write selection to save & log
+         SaveAndLog(f'Player Two will be played by {Player2}\n') 
          return Player2
     else:
         print("Please enter A, B, or quit to exit")
@@ -169,6 +193,8 @@ def display_TTTBoard():
 ## win conditions function ###
 # returns false until a given marker is present in all three slots of one of the conditions
 def CheckForWin(PlayerMarker):
+    with open(logfile, 'a') as save_input: # a = append 
+        save_input.write(f'CheckForWin invoked - checking for a victory.\n')
     #list of lists of possible win conditions
     WinConditions = [
         # Horizontal
@@ -188,15 +214,24 @@ def CheckForWin(PlayerMarker):
         # if all 3 values in any list match a player marker, then it is 3 in a row , return true
         if TTTBoard[Conditions[0]] == TTTBoard[Conditions[1]] == TTTBoard[Conditions[2]] == PlayerMarker:
             return True
+    with open(logfile, 'a') as save_input: # a = append 
+        save_input.write(f'CheckForWin: No Winners.\n')
     return False
+
 
 #function to update PlaceList with available moves
 def remove_AvailablePlaces(Move):
-    #RemoveIndex = Move-1
-    print(f"Move is {Move}.")# Index is {RemoveIndex}")
-    #print(f"Index is is {PlaceList[Move]}.")
-    print(f"removing  {Move} from list of available moves.")
+    #status print -optional
+    #print(f"Move is {Move}.") # move given
+    #status print -optional
+    #print(f"Index is is {PlaceList[Move]}.") # index of move
+    #status print -optional # removal note
+    #print(f"removing  {Move} from list of available moves.")
     PlaceList.remove(Move) #remove user's move from list of available moves (-1 as index starts at zero)
+    with open(logfile, 'a') as save_input: # a = append to log file
+            save_input.write(f'{Move} removed from list of available moves.\n') #\n for new line
+            save_input.write(f'Board Dictionary is: {TTTBoard}\n')
+            save_input.write(f'List of Places is: {PlaceList}\n')
 
 
 ## stalemate conditions function
@@ -214,9 +249,8 @@ def CheckForStalemate():
    #if set(PlaceList).isdisjoint(TTTValues): # keeping as history
       # tell the player there are no more moves
       print(StalemateOctopus.center(Centerwidth))
-      # update the save file with exit reason
-      with open(savefile, 'a') as save_input: # a = append 
-         save_input.write(f'Stalemate: No moves left, exiting. \n') #\n for new line
+      # update the save & log files with exit reason
+      SaveAndLog(f'Stalemate: No moves left, exiting. \n') #\n for new line
       sys.exit()
    else:
       #status print - uncomment to observe progress
@@ -270,24 +304,23 @@ def TTT_Move(CurrentPlayer,PlayerMarker):
                     TTTBoard[PlaceMark] = PlayerMarker
                     # remove the move from the list of available places
                     remove_AvailablePlaces(PlaceMark)
-                    # update save file with this info
-                    with open(savefile, 'a') as save_input: # a = append 
-                        save_input.write(f'Player {CurrentPlayer} put their {PlayerMarker} on {PlaceMark} successfully. \n') #\n for new line
-                     #display the board
+                    # update save/log files with this info
+                    SaveAndLog(f'Player {CurrentPlayer} put their {PlayerMarker} on {PlaceMark} successfully. \n') #\n for new line
+                    #display the board
                     display_TTTBoard()
-                     # status / troubleshooting
-                    print("Current list of available moves: ",PlaceList) # mute, for troubleshooting
+                    # status / troubleshooting
+                    #print("Current list of available moves: ",PlaceList) # mute, for troubleshooting
                     break
                 else:
                     # if place is taken, display message and ask player to try again.
                     print(f"Oops! {PlaceMark} is taken by an {TTTBoard[PlaceMark]}. try again!")
-                    # update save file with this info
-                    with open(savefile, 'a') as save_input: # a = append 
-                        save_input.write(f'Player {CurrentPlayer} tried to put their {PlayerMarker} on {PlaceMark}, but it was taken by an {TTTBoard[PlaceMark]}. \n') #\n for new line
+                    # update save/log files with this info
+                    SaveAndLog(f'Player {CurrentPlayer} tried to put their {PlayerMarker} on {PlaceMark}, but it was taken by an {TTTBoard[PlaceMark]}. \n') #\n for new line
             
         except ValueError:
             print(f"Please try again, {CurrentPlayer}.  1-9 to place your {PlayerMarker} or 'quit' to exit.")
-
+            with open(logfile, 'a') as save_input: # a = append to log file
+                save_input.write("ValueError thrown in move logic, retrying\n")
 
 #function to have computer randomly select move ###
 def Octo_Move(CurrentPlayer,PlayerMarker):
@@ -298,21 +331,19 @@ def Octo_Move(CurrentPlayer,PlayerMarker):
         #check if location is taken, if not place Octo Marker
         if TTTBoard[PlaceList[PlacePick]] not in ["X","O"]:
             TTTBoard[PlaceList[PlacePick]] = PlayerMarker
+            # update save file with this info
+            SaveAndLog(f'The OctoBot put their {PlayerMarker} on {PlaceList[PlacePick]} successfully. \n') #\n for new line
             # remove the move from the list of available places
             remove_AvailablePlaces(PlaceList[PlacePick])
-            # update save file with this info
-            with open(savefile, 'a') as save_input: # a = append 
-               save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} successfully. \n') #\n for new line
             #display the board
             display_TTTBoard()
             # status / troubleshooting
-            print("Current list of available moves: ",PlaceList) # mute, for troubleshooting
+            #print("Current list of available moves: ",PlaceList) # mute, for troubleshooting
         else:
             # if move was taken, put in the save file, try again
             print(f"{PlaceList[PlacePick]} taken...")
             # update save file with this info
-            with open(savefile, 'a') as save_input: # a = append 
-               save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} but it was taken. \n') #\n for new line
+            SaveAndLog(f'The OctoBot put their {PlayerMarker} on {PlacePick} but it was taken. \n') #\n for new line
             #call move function to try again   
             Octo_Move(CurrentPlayer,PlayerMarker)
 
@@ -323,8 +354,7 @@ def Octo_Max(CurrentPlayer,PlayerMarker):
         # using list of places as dictionary used for the board is not positional.
         print(f"{CurrentPlayer} is playing {PlaceList[PlacePick]}")
         #TTTBoard[PlaceList[PlacePick]] = PlayerMarker
-        with open(savefile, 'a') as save_input: # a = append 
-               save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} successfully. \n') #\n for new line
+        SaveAndLog(f'The OctoMaxBot put their {PlayerMarker} on {PlacePick} successfully. \n') #\n for new line
             #display the board
         display_TTTBoard()
 
@@ -341,7 +371,7 @@ def TurnLogic(CurrentPlayer, Players):
     # (with two players this just switches between the two) 
    next_player_index = (current_player_index + 1) % len(Players)
    #update save file with switch
-   with open(savefile, 'a') as save_input: # a = append 
+   with open(logfile, 'a') as save_input: # a = append 
       save_input.write(f'TurnLogic: Switching from player {Players[current_player_index]} to player {Players[next_player_index]}. \n') #\n for new line
    # return the next player in the list as the current player
    return Players[next_player_index]
@@ -399,8 +429,7 @@ def TTT_Main():
          print(f"Player {CurrentPlayer[0]} won!")
          print(VictoryOctopus.center(Centerwidth))
          # update the save file with this info
-         with open(savefile, 'a') as save_input: # a = append 
-            save_input.write(f'"Player {CurrentPlayer[0]} won. Exiting.") \n') #\n for new line
+         SaveAndLog(f'"Player {CurrentPlayer[0]} won. Exiting." \n') #\n for new line
          sys.exit()
       else:
          pass
