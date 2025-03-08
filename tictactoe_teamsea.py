@@ -35,9 +35,9 @@ import time #import time
 
 #### Board Dictionary
 TTTBoard = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}  
-##separate tuple of places for use in other logic 
+##separate list of places for use in other logic 
 # (dictionary can't be called positionally for random, compare list for stalemate logic)
-PlaceList = (1, 2, 3, 4, 5, 6, 7, 8, 9) #define list of available moves
+PlaceList = [1, 2, 3, 4, 5, 6, 7, 8, 9] #define list of available moves
 
 # save file
 savefile = 'tictactoe.txt'
@@ -161,7 +161,7 @@ def display_TTTBoard():
     -------------   
     | {TTTBoard[4]} | {TTTBoard[5]} | {TTTBoard[6]} |
     -------------
-    | {TTTBoard[7]} | {TTTBoard[6]} | {TTTBoard[9]} |
+    | {TTTBoard[7]} | {TTTBoard[8]} | {TTTBoard[9]} |
     +-----------+"""
     # print board
     print(TTTBoardVar) #.center(Centerwidth)) 
@@ -190,18 +190,28 @@ def CheckForWin(PlayerMarker):
             return True
     return False
 
+#function to update PlaceList with available moves
+def remove_AvailablePlaces(Move):
+    #RemoveIndex = Move-1
+    print(f"Move is {Move}.")# Index is {RemoveIndex}")
+    #print(f"Index is is {PlaceList[Move]}.")
+    print(f"removing  {Move} from list of available moves.")
+    PlaceList.remove(Move) #remove user's move from list of available moves (-1 as index starts at zero)
+
 
 ## stalemate conditions function
 # checks if any moves are left and
 # displays message, exits if there are none
 def CheckForStalemate():
-   TTTValues = list(TTTBoard.values())
+   #TTTValues = list(TTTBoard.values()) # keeping for posterity
    # isdisjoint() checks if the list of values currently in the Tic Tac Toe Board
-   # have any elements in common with the tuple of available places
+   # have any elements in common with the list of available places
    # if there are none, there are no moves left, and it is a stalemate
-   #print("Tuple of moves", PlaceList) #status print / troubleshooting
+   #print("List of moves", PlaceList) #status print / troubleshooting
    #print("Current board", TTTValues)#status print / troubleshooting
-   if set(PlaceList).isdisjoint(TTTValues):
+   # but after incorporating Ian's method, we can just check if the list is empty
+   if len(PlaceList) == 0:
+   #if set(PlaceList).isdisjoint(TTTValues): # keeping as history
       # tell the player there are no more moves
       print(StalemateOctopus.center(Centerwidth))
       # update the save file with exit reason
@@ -240,49 +250,63 @@ StalemateOctopus=f"""
 ##################
 """
 
+
+
+
 ### Move Logic
 # player move function
 def TTT_Move(CurrentPlayer,PlayerMarker):
     while True:
-        PlaceMarker = input(f"Player {CurrentPlayer}, enter 1-9 to place your {PlayerMarker} ")
-        exit_utility(PlaceMarker) # pass input through the utility function that checks for 'quit' 
-        PlaceMark = int(PlaceMarker)
-        # if input is in the list of moves
-        if PlaceMark in TTTBoard:
-            print(TTTBoard[PlaceMark])
-            # check if the location is already taken.
-            if TTTBoard[PlaceMark] not in ["X","O"]:
-               TTTBoard[PlaceMark] = PlayerMarker
-               # update save file with this info
-               with open(savefile, 'a') as save_input: # a = append 
-                  save_input.write(f'Player {CurrentPlayer} put their {PlayerMarker} on {PlaceMark} successfully. \n') #\n for new line
-               #display the board
-               display_TTTBoard()
-               break
-            else:
-               # if place is taken, display message and ask player to try again.
-               print(f"Oops! {PlaceMark} is taken by an {TTTBoard[PlaceMark]}. try again!")
-               # update save file with this info
-               with open(savefile, 'a') as save_input: # a = append 
-                  save_input.write(f'Player {CurrentPlayer} tried to put their {PlayerMarker} on {PlaceMark}, but it was taken by an {TTTBoard[PlaceMark]}. \n') #\n for new line
-        else:
-            #print("displaying board: ",TTTBoard ) # status print
-            print(f"Select a number 1-9 to place your {PlayerMarker}, or quit to exit.")
+        try:
+            #ask player for move
+            PlaceMarker = input(f"Player {CurrentPlayer}, enter 1-9 to place your {PlayerMarker} ")
+            exit_utility(PlaceMarker) # pass input through the utility function that checks for 'quit' 
+            PlaceMark = int(PlaceMarker)
+            # if input is in the list of moves
+            if PlaceMark in TTTBoard:
+                print(TTTBoard[PlaceMark])
+                # check if the location is already taken.
+                if TTTBoard[PlaceMark] not in ["X","O"]:
+                    TTTBoard[PlaceMark] = PlayerMarker
+                    # remove the move from the list of available places
+                    remove_AvailablePlaces(PlaceMark)
+                    # update save file with this info
+                    with open(savefile, 'a') as save_input: # a = append 
+                        save_input.write(f'Player {CurrentPlayer} put their {PlayerMarker} on {PlaceMark} successfully. \n') #\n for new line
+                     #display the board
+                    display_TTTBoard()
+                     # status / troubleshooting
+                    print("Current list of available moves: ",PlaceList) # mute, for troubleshooting
+                    break
+                else:
+                    # if place is taken, display message and ask player to try again.
+                    print(f"Oops! {PlaceMark} is taken by an {TTTBoard[PlaceMark]}. try again!")
+                    # update save file with this info
+                    with open(savefile, 'a') as save_input: # a = append 
+                        save_input.write(f'Player {CurrentPlayer} tried to put their {PlayerMarker} on {PlaceMark}, but it was taken by an {TTTBoard[PlaceMark]}. \n') #\n for new line
+            
+        except ValueError:
+            print(f"Please try again, {CurrentPlayer}.  1-9 to place your {PlayerMarker} or 'quit' to exit.")
+
 
 #function to have computer randomly select move ###
 def Octo_Move(CurrentPlayer,PlayerMarker):
         # randomly choose a place from list of places
-        PlacePick = random.randint(0, len(TTTBoard) - 1)
+        PlacePick = random.randint(0, len(PlaceList) - 1)
         # using list of places as dictionary used for the board is not positional.
         print(f"{CurrentPlayer} is playing {PlaceList[PlacePick]}")
         #check if location is taken, if not place Octo Marker
         if TTTBoard[PlaceList[PlacePick]] not in ["X","O"]:
             TTTBoard[PlaceList[PlacePick]] = PlayerMarker
+            # remove the move from the list of available places
+            remove_AvailablePlaces(PlaceList[PlacePick])
             # update save file with this info
             with open(savefile, 'a') as save_input: # a = append 
                save_input.write(f'The OctoBot put their {PlayerMarker} on {PlacePick} successfully. \n') #\n for new line
             #display the board
             display_TTTBoard()
+            # status / troubleshooting
+            print("Current list of available moves: ",PlaceList) # mute, for troubleshooting
         else:
             # if move was taken, put in the save file, try again
             print(f"{PlaceList[PlacePick]} taken...")
