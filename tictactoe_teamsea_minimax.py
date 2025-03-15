@@ -364,6 +364,8 @@ def minimax(board, available_moves, player, depth=4): #define OctoBot minimax lo
     best_score = -float('inf') if player == Player2Marker else float('inf') #assign negative/positive infinity as upper and lower boundaries of score spectrum
     best_move = None #define variable for best move, initially set it as None
 
+    available_moves = PlaceList
+
     for move in available_moves[:]: #interate over a copy to avoid actual mods to PlaceList
         board[move] = player #write move to board
         available_moves.remove(move) #remove most recent move from list of available moves
